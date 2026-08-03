@@ -1,0 +1,35 @@
+{% extends "base_app.html" %}
+{% load static %}
+{% block title %}Semantic Search{% endblock %}
+{% block page_id %}search{% endblock %}
+
+{% block content %}
+<div class="search-hero">
+  <h1>Search with meaning, not keywords</h1>
+  <p>Ask for what you mean — Lexora searches across every indexed document in your case files and ranks results by relevance.</p>
+  <div class="search-box">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+    <input id="search-input" placeholder="Find documents discussing the murder weapon…" />
+    <button class="btn btn-primary go" id="search-go-btn">Search</button>
+  </div>
+  <div class="search-examples">
+    <button class="suggestion-chip" data-example="Find documents discussing the murder weapon">murder weapon</button>
+    <button class="suggestion-chip" data-example="What clauses changed between contract versions">changed contract clauses</button>
+    <button class="suggestion-chip" data-example="Evidence about the delayed possession">delayed possession</button>
+    <button class="suggestion-chip" data-example="Statements mentioning fingerprints">mentioning fingerprints</button>
+  </div>
+  <div class="search-scope">
+    <button class="filter-chip active" data-scope="all">All cases</button>
+    <button class="filter-chip" data-scope="crl-214-2024">State vs. Sharma</button>
+    <button class="filter-chip" data-scope="civ-89-2023">Mehta Contract Dispute</button>
+    <button class="filter-chip" data-scope="arb-12-2025">Rao Arbitration</button>
+  </div>
+</div>
+
+<div id="search-meta" class="text-sm text-muted" style="max-width:760px;margin:0 auto 10px;"></div>
+<div class="search-results" id="search-results"></div>
+{% endblock %}
+
+{% block page_js %}
+<script src="{% static 'js/search.js' %}"></script>
+{% endblock %}

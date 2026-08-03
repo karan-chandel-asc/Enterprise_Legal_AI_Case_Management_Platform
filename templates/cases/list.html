@@ -1,0 +1,115 @@
+{% extends "base_app.html" %}
+{% load static %}
+{% block title %}Cases{% endblock %}
+{% block page_id %}cases{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div class="titles">
+    <h1 class="h1">Cases</h1>
+    <p>48 cases · 31 active</p>
+  </div>
+  <div class="page-actions">
+    <button class="btn btn-primary" id="new-case-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      New Case
+    </button>
+  </div>
+</div>
+
+<div class="toolbar">
+  <div class="search-input">
+    <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
+    <input class="input" id="case-search" placeholder="Search by title, client, or case number…" />
+  </div>
+  <button class="filter-chip active" data-status-filter="all">All cases</button>
+  <button class="filter-chip" data-status-filter="active"><span class="status-dot" style="background:var(--success)"></span>Active</button>
+  <button class="filter-chip" data-status-filter="hearing"><span class="status-dot" style="background:var(--warning)"></span>Hearing</button>
+  <button class="filter-chip" data-status-filter="closed"><span class="status-dot" style="background:var(--faint)"></span>Closed</button>
+</div>
+
+<div class="card">
+  <div class="table-wrap">
+    <table class="dt">
+      <thead>
+        <tr>
+          <th>Case</th>
+          <th>Type</th>
+          <th>Client</th>
+          <th>Court</th>
+          <th>Status</th>
+          <th>Next hearing</th>
+          <th>Docs</th>
+          <th style="width:40px;"></th>
+        </tr>
+      </thead>
+      <tbody id="cases-table-body"></tbody>
+    </table>
+  </div>
+  <div class="empty hidden" id="cases-empty">
+    <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div>
+    <h4>No cases match your search</h4>
+    <p class="text-sm">Try a different keyword or clear the filters.</p>
+  </div>
+</div>
+
+<!-- Create / Edit Case Modal -->
+<div class="modal-backdrop" id="case-modal">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <h3 id="case-modal-title">Create new case</h3>
+      <button class="icon-btn" data-close-modal>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="case-form">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px;">
+          <div class="field"><label>Case number</label><input class="input" id="f-number" placeholder="CRL/000/2026" /></div>
+          <div class="field"><label>Case title</label><input class="input" id="f-title" placeholder="State vs. Doe" /></div>
+          <div class="field">
+            <label>Case type</label>
+            <select class="input" id="f-type">
+              <option>Criminal</option><option>Civil</option><option>Arbitration</option><option>Family</option><option>Corporate</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Status</label>
+            <select class="input" id="f-status">
+              <option value="active">Active</option><option value="hearing">Hearing</option><option value="closed">Closed</option>
+            </select>
+          </div>
+          <div class="field"><label>Client name</label><input class="input" id="f-client" placeholder="Client full name" /></div>
+          <div class="field"><label>Opposite party</label><input class="input" id="f-opposite" placeholder="Opposing party" /></div>
+          <div class="field"><label>Court name</label><input class="input" id="f-court" placeholder="District Court, City" /></div>
+          <div class="field"><label>Hearing date</label><input class="input" type="date" id="f-hearing" /></div>
+        </div>
+        <div class="field"><label>Description</label><textarea class="input" id="f-desc" rows="3" placeholder="Brief description of the matter…"></textarea></div>
+      </form>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" data-close-modal>Cancel</button>
+      <button class="btn btn-primary" id="case-save-btn">Save case</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete confirm -->
+<div class="modal-backdrop" id="delete-modal">
+  <div class="modal">
+    <div class="modal-head"><h3>Delete case</h3><button class="icon-btn" data-close-modal>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body">
+      <p style="font-size:13.5px;color:var(--ink-2);">Are you sure you want to delete <b id="delete-case-name" style="color:var(--ink)"></b>? This will permanently remove all documents, notes, and AI chat history for this case.</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" data-close-modal>Cancel</button>
+      <button class="btn btn-danger" id="confirm-delete-btn">Delete case</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script src="{% static 'js/cases-list.js' %}"></script>
+{% endblock %}

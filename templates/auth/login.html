@@ -1,0 +1,39 @@
+{% extends "base_auth.html" %}
+{% block title %}Sign in{% endblock %}
+{% block content %}
+<h2>Welcome back</h2>
+<p class="sub">Sign in to your Lexora workspace.</p>
+
+<form id="login-form" novalidate>
+  <div class="field">
+    <label for="email">Work email</label>
+    <input class="input" type="email" id="email" placeholder="you@lawfirm.com" value="ananya.verma@lexora.law" required />
+  </div>
+  <div class="field">
+    <label for="password">Password</label>
+    <div class="input-group">
+      <input class="input" type="password" id="password" placeholder="••••••••••" value="demo-password" required />
+      <button type="button" class="adorn" data-toggle-password="password">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
+  </div>
+  <div class="flex items-center justify-between" style="margin-bottom:20px;">
+    <label class="checkbox-row"><input type="checkbox" checked /> Keep me signed in</label>
+    <a href="{% url 'forgot_password' %}" style="font-size:12.5px;color:var(--accent);font-weight:600;">Forgot password?</a>
+  </div>
+  <button type="submit" class="btn btn-primary btn-lg btn-block">Sign in</button>
+</form>
+
+<div class="auth-foot">Don't have an account? <a href="{% url 'register' %}">Create one</a></div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+  qs("#login-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    toast("Verifying credentials…");
+    setTimeout(() => { window.location = "{% url 'mfa_otp' %}"; }, 500);
+  });
+</script>
+{% endblock %}

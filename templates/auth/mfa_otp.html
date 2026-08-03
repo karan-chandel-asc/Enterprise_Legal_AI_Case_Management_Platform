@@ -1,0 +1,44 @@
+{% extends "base_auth.html" %}
+{% block title %}Two-factor verification{% endblock %}
+{% block content %}
+<div style="width:44px;height:44px;border-radius:12px;background:var(--accent-soft);display:flex;align-items:center;justify-content:center;margin-bottom:18px;">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4338ca" stroke-width="1.8"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+</div>
+<h2>Two-factor verification</h2>
+<p class="sub">For security, enter the 6-digit code sent to <b style="color:var(--ink)">ananya.verma@lexora.law</b>.</p>
+
+<form id="mfa-form" novalidate>
+  <div class="otp-row" style="margin-bottom:10px;">
+    <input class="otp-box" maxlength="1" inputmode="numeric" />
+    <input class="otp-box" maxlength="1" inputmode="numeric" />
+    <input class="otp-box" maxlength="1" inputmode="numeric" />
+    <input class="otp-box" maxlength="1" inputmode="numeric" />
+    <input class="otp-box" maxlength="1" inputmode="numeric" />
+    <input class="otp-box" maxlength="1" inputmode="numeric" />
+  </div>
+  <p class="text-sm text-muted" style="margin-bottom:20px;">Code expires in <b class="mono" id="mfa-timer" style="color:var(--ink)">04:59</b></p>
+  <button type="submit" class="btn btn-primary btn-lg btn-block">Verify & continue</button>
+</form>
+
+<div class="auth-foot"><a href="#" id="resend-mfa">Resend code</a> · <a href="{% url 'login' %}">Use a different account</a></div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+  qs("#mfa-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    toast("Verified — welcome back", "success");
+    setTimeout(() => { window.location = "{% url 'dashboard' %}"; }, 500);
+  });
+  qs("#resend-mfa").addEventListener("click", (e) => { e.preventDefault(); toast("New code sent"); });
+
+  let secs = 299;
+  setInterval(() => {
+    if (secs <= 0) return;
+    secs--;
+    const m = String(Math.floor(secs / 60)).padStart(2, "0");
+    const s = String(secs % 60).padStart(2, "0");
+    qs("#mfa-timer").textContent = `${m}:${s}`;
+  }, 1000);
+</script>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base_auth.html" %}
+{% block title %}Create account{% endblock %}
+{% block content %}
+<h2>Create your workspace</h2>
+<p class="sub">Set up your Lexora account in under a minute.</p>
+
+<form id="register-form" novalidate>
+  <div class="field">
+    <label for="fullname">Full name</label>
+    <input class="input" type="text" id="fullname" placeholder="Ananya Verma" required />
+  </div>
+  <div class="field">
+    <label for="firm">Law firm / practice name</label>
+    <input class="input" type="text" id="firm" placeholder="Verma & Associates" required />
+  </div>
+  <div class="field">
+    <label for="reg-email">Work email</label>
+    <input class="input" type="email" id="reg-email" placeholder="you@lawfirm.com" required />
+  </div>
+  <div class="field">
+    <label for="reg-password">Password</label>
+    <div class="input-group">
+      <input class="input" type="password" id="reg-password" placeholder="Minimum 8 characters" required />
+      <button type="button" class="adorn" data-toggle-password="reg-password">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+      </button>
+    </div>
+    <span class="hint">Use 8+ characters with a number and a symbol.</span>
+  </div>
+  <label class="checkbox-row" style="margin-bottom:20px;">
+    <input type="checkbox" required />
+    I agree to the Terms of Service and Privacy Policy
+  </label>
+  <button type="submit" class="btn btn-primary btn-lg btn-block">Create account</button>
+</form>
+
+<div class="auth-foot">Already have an account? <a href="{% url 'login' %}">Sign in</a></div>
+{% endblock %}
+
+{% block page_js %}
+<script>
+  qs("#register-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    toast("Creating your workspace…");
+    setTimeout(() => { window.location = "{% url 'verify_email' %}"; }, 500);
+  });
+</script>
+{% endblock %}

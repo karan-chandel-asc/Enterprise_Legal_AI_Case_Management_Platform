@@ -1,0 +1,92 @@
+{% extends "base_app.html" %}
+{% load static %}
+{% block title %}Hearings{% endblock %}
+{% block page_id %}hearings{% endblock %}
+
+{% block content %}
+<div class="page-head">
+  <div class="titles">
+    <h1 class="h1">Hearings</h1>
+    <p>5 upcoming hearings across 5 cases.</p>
+  </div>
+  <div class="page-actions">
+    <button class="btn btn-primary" id="new-hearing-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Schedule hearing
+    </button>
+  </div>
+</div>
+
+<div class="hearings-grid">
+  <div class="card card-pad">
+    <div class="cal-nav">
+      <button class="icon-btn btn-icon-only" id="cal-prev">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <b id="cal-label">August 2026</b>
+      <button class="icon-btn btn-icon-only" id="cal-next">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <span class="text-sm text-muted" style="margin-left:auto;">Confirmed <span class="status-dot" style="background:var(--accent);display:inline-block;margin:0 4px;"></span> Urgent <span class="status-dot" style="background:var(--danger);display:inline-block;margin:0 4px;"></span></span>
+    </div>
+    <div class="cal-grid" id="cal-grid"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-head"><h3>Upcoming hearings</h3></div>
+    <div id="hearing-list"></div>
+  </div>
+</div>
+
+<div class="slideover-backdrop" id="hearing-slideover">
+  <div class="slideover">
+    <div class="slideover-head">
+      <div>
+        <div class="text-xs text-faint font-semibold" id="ho-case-tag" style="text-transform:uppercase;letter-spacing:.04em;margin-bottom:4px;"></div>
+        <h3 id="ho-title"></h3>
+      </div>
+      <button class="icon-btn" data-close-slideover>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="slideover-body">
+      <div id="ho-status" style="margin-bottom:16px;"></div>
+      <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:20px;">
+        <div><div class="text-xs text-faint font-semibold" style="text-transform:uppercase;margin-bottom:3px;">Date & time</div><div style="font-weight:600;font-size:13.5px;" id="ho-datetime"></div></div>
+        <div><div class="text-xs text-faint font-semibold" style="text-transform:uppercase;margin-bottom:3px;">Court</div><div style="font-weight:600;font-size:13.5px;" id="ho-court"></div></div>
+        <div><div class="text-xs text-faint font-semibold" style="text-transform:uppercase;margin-bottom:3px;">Judge</div><div style="font-weight:600;font-size:13.5px;" id="ho-judge"></div></div>
+        <div><div class="text-xs text-faint font-semibold" style="text-transform:uppercase;margin-bottom:3px;">Notes</div><div style="font-size:13px;color:var(--ink-2);line-height:1.6;" id="ho-notes"></div></div>
+      </div>
+      <a class="btn btn-secondary btn-block" id="ho-open-case">Open case file</a>
+    </div>
+  </div>
+</div>
+
+<!-- Schedule hearing modal -->
+<div class="modal-backdrop" id="hearing-modal">
+  <div class="modal">
+    <div class="modal-head"><h3>Schedule hearing</h3><button class="icon-btn" data-close-modal>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></div>
+    <div class="modal-body">
+      <div class="field"><label>Case</label>
+        <select class="input" id="nh-case"></select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px;">
+        <div class="field"><label>Date</label><input class="input" type="date" id="nh-date" /></div>
+        <div class="field"><label>Time</label><input class="input" type="time" id="nh-time" /></div>
+      </div>
+      <div class="field"><label>Court</label><input class="input" id="nh-court" placeholder="Court name" /></div>
+      <div class="field"><label>Judge</label><input class="input" id="nh-judge" placeholder="Presiding judge" /></div>
+      <div class="field" style="margin-bottom:0;"><label>Notes</label><textarea class="input" id="nh-notes" rows="3" placeholder="Preparation notes…"></textarea></div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" data-close-modal>Cancel</button>
+      <button class="btn btn-primary" id="save-hearing-btn">Schedule</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block page_js %}
+<script src="{% static 'js/hearings.js' %}"></script>
+{% endblock %}
