@@ -1,0 +1,521 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Lexora · Enterprise Legal AI Case Management Platform</title>
+<meta name="description" content="Organize cases, upload documents, search thousands of pages with AI, prepare hearings, and generate legal summaries — all in one workspace." />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        fontFamily: { sans: ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'] },
+        colors: {
+          navy: {
+            50: '#eef2f8', 100: '#d7e0ee', 200: '#b0c1dd', 300: '#82a0c9',
+            400: '#4f77a8', 500: '#2f5686', 600: '#1e3d66', 700: '#152c4d',
+            800: '#0f2038', 900: '#0a1730', 950: '#060f20',
+          },
+          brand: {
+            50: '#eef4ff', 100: '#dbe7fe', 200: '#bfd6fe', 300: '#93bcfd',
+            400: '#5f99fa', 500: '#3b78f6', 600: '#255aeb', 700: '#1d47d6',
+            800: '#1e3ca8', 900: '#1e3684',
+          },
+        },
+        boxShadow: {
+          soft: '0 1px 2px rgba(10, 23, 48, .06), 0 8px 24px -8px rgba(10, 23, 48, .10)',
+          card: '0 20px 48px -16px rgba(10, 23, 48, .18)',
+        },
+      },
+    },
+  };
+</script>
+
+<style>
+  html { scroll-behavior: smooth; }
+  body { font-family: 'Inter', ui-sans-serif, system-ui, sans-serif; }
+  [x-cloak] { display: none !important; }
+</style>
+</head>
+
+<body class="bg-white text-slate-700 antialiased" data-page="landing" x-data="{ mobileNavOpen: false }">
+
+<!-- ============================= Navbar ============================= -->
+<header class="sticky top-0 z-50 bg-white/90 backdrop-blur border-b border-slate-200">
+  <nav class="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+    <a href="{% url 'landing' %}" class="flex items-center gap-2.5 shrink-0">
+      <span class="w-8 h-8 rounded-lg bg-gradient-to-br from-navy-700 to-brand-500 flex items-center justify-center">
+        <svg class="w-4.5 h-4.5 text-white" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 8l7-5 7 5M5 8v9a1 1 0 0 0 1 1h3M19 8v9a1 1 0 0 1-1 1h-3"/></svg>
+      </span>
+      <span class="text-lg font-extrabold tracking-tight text-navy-900">Lexora</span>
+    </a>
+
+    <div class="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
+      <a href="#home" class="hover:text-navy-900 transition-colors">Home</a>
+      <a href="#features" class="hover:text-navy-900 transition-colors">Features</a>
+      <a href="#about" class="hover:text-navy-900 transition-colors">About</a>
+      <a href="#contact" class="hover:text-navy-900 transition-colors">Contact</a>
+    </div>
+
+    <div class="hidden md:flex items-center gap-3">
+      <a href="{% url 'login' %}" data-analytics-cta="landing.nav.login" class="px-4 py-2 text-sm font-semibold text-navy-900 hover:text-brand-600 transition-colors">Login</a>
+      <a href="{% url 'register' %}" data-analytics-cta="landing.nav.register" class="px-4 py-2 text-sm font-semibold text-white bg-navy-900 rounded-lg shadow-soft hover:bg-navy-800 transition-colors">Register</a>
+    </div>
+
+    <button class="md:hidden p-2 text-navy-900" @click="mobileNavOpen = !mobileNavOpen" aria-label="Toggle menu">
+      <svg x-show="!mobileNavOpen" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+      <svg x-show="mobileNavOpen" x-cloak width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </nav>
+
+  <div x-show="mobileNavOpen" x-cloak class="md:hidden border-t border-slate-200 bg-white px-6 py-4 space-y-3">
+    <a href="#home" class="block text-sm font-medium text-slate-600" @click="mobileNavOpen = false">Home</a>
+    <a href="#features" class="block text-sm font-medium text-slate-600" @click="mobileNavOpen = false">Features</a>
+    <a href="#about" class="block text-sm font-medium text-slate-600" @click="mobileNavOpen = false">About</a>
+    <a href="#contact" class="block text-sm font-medium text-slate-600" @click="mobileNavOpen = false">Contact</a>
+    <div class="pt-3 flex gap-3 border-t border-slate-100">
+      <a href="{% url 'login' %}" class="flex-1 text-center px-4 py-2 text-sm font-semibold text-navy-900 border border-slate-200 rounded-lg">Login</a>
+      <a href="{% url 'register' %}" class="flex-1 text-center px-4 py-2 text-sm font-semibold text-white bg-navy-900 rounded-lg">Register</a>
+    </div>
+  </div>
+</header>
+
+<!-- ============================= Hero ============================= -->
+<section id="home" class="max-w-7xl mx-auto px-6 pt-16 pb-20 md:pt-24 md:pb-28 grid md:grid-cols-2 gap-14 items-center">
+  <div>
+    <span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-50 text-brand-700 text-xs font-semibold border border-brand-100">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.9L12 3z"/></svg>
+      AI-Powered Legal Workspace
+    </span>
+
+    <h1 class="mt-5 text-4xl sm:text-5xl font-extrabold tracking-tight text-navy-900 leading-tight">
+      Enterprise Legal AI<br class="hidden sm:block" />
+      <span class="text-brand-600">Case Management Platform</span>
+    </h1>
+
+    <p class="mt-5 text-base sm:text-lg text-slate-600 leading-relaxed max-w-xl">
+      Organize every case in one place, upload and search thousands of pages of evidence with AI,
+      prepare for hearings faster, and generate clear legal summaries — without leaving your workspace.
+    </p>
+
+    <div class="mt-8 flex flex-wrap items-center gap-4">
+      <a href="{% url 'register' %}" data-analytics-cta="landing.hero.get_started" class="px-6 py-3 rounded-xl bg-navy-900 text-white text-sm font-semibold shadow-soft hover:bg-navy-800 transition-colors">
+        Get Started
+      </a>
+      <a href="#features" class="px-6 py-3 rounded-xl border border-slate-300 text-navy-900 text-sm font-semibold hover:border-navy-300 hover:bg-slate-50 transition-colors">
+        Learn More
+      </a>
+    </div>
+
+    <div class="mt-10 flex items-center gap-6 text-sm text-slate-500">
+      <div><span class="text-navy-900 font-bold">Built for modern legal teams</span> — secure and reliable</div>
+      <div class="h-4 w-px bg-slate-200"></div>
+      <div><span class="text-navy-900 font-bold">Easily manage your legal documents</span> — perfect for growing practices</div>
+    </div>
+  </div>
+
+  <!-- Hero dashboard mockup -->
+  <div class="relative">
+    <div class="absolute -inset-4 bg-brand-50 rounded-3xl -z-10"></div>
+    <div class="rounded-2xl border border-slate-200 bg-white shadow-card overflow-hidden">
+      <div class="flex items-center gap-1.5 px-4 py-3 border-b border-slate-100 bg-slate-50">
+        <span class="w-2.5 h-2.5 rounded-full bg-red-300"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-amber-300"></span>
+        <span class="w-2.5 h-2.5 rounded-full bg-emerald-300"></span>
+        <span class="ml-3 text-xs font-medium text-slate-400">Lexora — Dashboard</span>
+      </div>
+      <div class="p-5 space-y-4">
+        <div class="grid grid-cols-3 gap-3">
+          <div class="rounded-xl border border-slate-200 p-3">
+            <p class="text-[11px] text-slate-400 font-medium">Active Cases</p>
+            <p class="text-xl font-extrabold text-navy-900 mt-1">128</p>
+          </div>
+          <div class="rounded-xl border border-slate-200 p-3">
+            <p class="text-[11px] text-slate-400 font-medium">Hearings this week</p>
+            <p class="text-xl font-extrabold text-navy-900 mt-1">9</p>
+          </div>
+          <div class="rounded-xl border border-slate-200 p-3">
+            <p class="text-[11px] text-slate-400 font-medium">Docs Indexed</p>
+            <p class="text-xl font-extrabold text-navy-900 mt-1">3,402</p>
+          </div>
+        </div>
+        <div class="rounded-xl border border-slate-200 p-3">
+          <p class="text-xs font-semibold text-navy-900 mb-2">Recent Cases</p>
+          <div class="space-y-2">
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-600">Verma vs. Sharma Textiles</span>
+              <span class="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-600 font-medium">Active</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-600">Kapoor Estate Settlement</span>
+              <span class="px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 font-medium">Hearing</span>
+            </div>
+            <div class="flex items-center justify-between text-xs">
+              <span class="text-slate-600">Nair Corporate Merger</span>
+              <span class="px-2 py-0.5 rounded-full bg-slate-100 text-slate-500 font-medium">Closed</span>
+            </div>
+          </div>
+        </div>
+        <div class="rounded-xl border border-brand-100 bg-brand-50/60 p-3 flex items-start gap-2.5">
+          <span class="w-6 h-6 rounded-lg bg-brand-600 text-white flex items-center justify-center shrink-0 mt-0.5">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.9L12 3z"/></svg>
+          </span>
+          <p class="text-xs text-navy-800 leading-relaxed">"Summarize the witness statements" — <span class="text-slate-500">3 sources cited</span></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= Features ============================= -->
+<section id="features" class="bg-slate-50 border-y border-slate-100">
+  <div class="max-w-7xl mx-auto px-6 py-20">
+    <div class="max-w-2xl mb-12">
+      <p class="text-sm font-semibold text-brand-600 uppercase tracking-wide">Features</p>
+      <h2 class="mt-2 text-3xl font-extrabold text-navy-900 tracking-tight">Everything a case team needs</h2>
+      <p class="mt-3 text-slate-600">A focused set of tools built around how legal teams actually work — from intake to hearing prep.</p>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Card -->
+      <div class="p-6 rounded-xl bg-white border border-slate-200 hover:border-brand-200 hover:shadow-soft transition-all">
+        <div class="w-11 h-11 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.9L12 3zM19 15l.8 2 2 .8-2 .8-.8 2-.8-2-2-.8 2-.8.8-2z"/></svg>
+        </div>
+        <h3 class="mt-4 font-bold text-navy-900">AI Legal Assistant</h3>
+        <p class="mt-2 text-sm text-slate-600 leading-relaxed">Ask questions about any case and get answers grounded in your own documents, with citations.</p>
+      </div>
+      <!-- Card -->
+      <div class="p-6 rounded-xl bg-white border border-slate-200 hover:border-brand-200 hover:shadow-soft transition-all">
+        <div class="w-11 h-11 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7h18M3 7v11a1 1 0 0 0 1 1h16a1 1 0 0 0 1-1V7M8 7V5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/></svg>
+        </div>
+        <h3 class="mt-4 font-bold text-navy-900">Case Management</h3>
+        <p class="mt-2 text-sm text-slate-600 leading-relaxed">Track case status, parties, court details, and history in one organized workspace.</p>
+      </div>
+      <!-- Card -->
+      <div class="p-6 rounded-xl bg-white border border-slate-200 hover:border-brand-200 hover:shadow-soft transition-all">
+        <div class="w-11 h-11 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 16V4m0 0L7 9m5-5l5 5M5 20h14"/></svg>
+        </div>
+        <h3 class="mt-4 font-bold text-navy-900">Document Upload</h3>
+        <p class="mt-2 text-sm text-slate-600 leading-relaxed">Drop in filings, contracts, and evidence — everything is stored, organized, and instantly searchable.</p>
+      </div>
+      <!-- Card -->
+      <div class="p-6 rounded-xl bg-white border border-slate-200 hover:border-brand-200 hover:shadow-soft transition-all">
+        <div class="w-11 h-11 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        </div>
+        <h3 class="mt-4 font-bold text-navy-900">AI Search</h3>
+        <p class="mt-2 text-sm text-slate-600 leading-relaxed">Search across thousands of pages in seconds and jump straight to the exact paragraph you need.</p>
+      </div>
+      <!-- Card -->
+      <div class="p-6 rounded-xl bg-white border border-slate-200 hover:border-brand-200 hover:shadow-soft transition-all">
+        <div class="w-11 h-11 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>
+        </div>
+        <h3 class="mt-4 font-bold text-navy-900">Hearing Timeline</h3>
+        <p class="mt-2 text-sm text-slate-600 leading-relaxed">See every upcoming hearing at a glance and prepare with the right documents ready to go.</p>
+      </div>
+      <!-- Card -->
+      <div class="p-6 rounded-xl bg-white border border-slate-200 hover:border-brand-200 hover:shadow-soft transition-all">
+        <div class="w-11 h-11 rounded-xl bg-brand-50 text-brand-600 flex items-center justify-center">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H6a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/><path d="M18.4 3.6a2 2 0 1 1 2.8 2.8L12 15.6l-4 1 1-4 9.4-9.4z"/></svg>
+        </div>
+        <h3 class="mt-4 font-bold text-navy-900">Legal Notes</h3>
+        <p class="mt-2 text-sm text-slate-600 leading-relaxed">Keep private notes attached to each case, right next to the documents they reference.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= How It Works ============================= -->
+<section id="about" class="max-w-7xl mx-auto px-6 py-20">
+  <div class="max-w-2xl mx-auto text-center mb-14">
+    <p class="text-sm font-semibold text-brand-600 uppercase tracking-wide">How it works</p>
+    <h2 class="mt-2 text-3xl font-extrabold text-navy-900 tracking-tight">From new case to case-ready in four steps</h2>
+  </div>
+
+  <div class="flex flex-col md:flex-row items-stretch justify-between gap-6 md:gap-4">
+    <!-- Step 1 -->
+    <div class="flex-1 flex flex-col items-center text-center">
+      <div class="w-12 h-12 rounded-full bg-navy-900 text-white flex items-center justify-center font-bold">1</div>
+      <h3 class="mt-4 font-bold text-navy-900">Create Case</h3>
+      <p class="mt-1 text-sm text-slate-600">Add case details, parties, and court information.</p>
+    </div>
+    <div class="hidden md:flex items-center justify-center text-slate-300 mt-6">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </div>
+    <div class="md:hidden flex justify-center text-slate-300">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+    </div>
+
+    <!-- Step 2 -->
+    <div class="flex-1 flex flex-col items-center text-center">
+      <div class="w-12 h-12 rounded-full bg-navy-900 text-white flex items-center justify-center font-bold">2</div>
+      <h3 class="mt-4 font-bold text-navy-900">Upload Documents</h3>
+      <p class="mt-1 text-sm text-slate-600">Add filings, evidence, and correspondence.</p>
+    </div>
+    <div class="hidden md:flex items-center justify-center text-slate-300 mt-6">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </div>
+    <div class="md:hidden flex justify-center text-slate-300">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+    </div>
+
+    <!-- Step 3 -->
+    <div class="flex-1 flex flex-col items-center text-center">
+      <div class="w-12 h-12 rounded-full bg-navy-900 text-white flex items-center justify-center font-bold">3</div>
+      <h3 class="mt-4 font-bold text-navy-900">AI Processes Documents</h3>
+      <p class="mt-1 text-sm text-slate-600">Documents are indexed and made searchable automatically.</p>
+    </div>
+    <div class="hidden md:flex items-center justify-center text-slate-300 mt-6">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+    </div>
+    <div class="md:hidden flex justify-center text-slate-300">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M6 13l6 6 6-6"/></svg>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="flex-1 flex flex-col items-center text-center">
+      <div class="w-12 h-12 rounded-full bg-brand-600 text-white flex items-center justify-center font-bold">4</div>
+      <h3 class="mt-4 font-bold text-navy-900">Chat with Your Case</h3>
+      <p class="mt-1 text-sm text-slate-600">Ask questions and get cited, source-backed answers.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= Dashboard Preview ============================= -->
+<section class="bg-navy-950 py-20">
+  <div class="max-w-7xl mx-auto px-6">
+    <div class="max-w-2xl mb-12">
+      <p class="text-sm font-semibold text-brand-400 uppercase tracking-wide">Product</p>
+      <h2 class="mt-2 text-3xl font-extrabold text-white tracking-tight">One workspace, the full picture</h2>
+      <p class="mt-3 text-slate-400">Cases, hearings, documents, and your AI assistant — all visible at a glance.</p>
+    </div>
+
+    <div class="rounded-2xl border border-white/10 bg-navy-900 shadow-card overflow-hidden">
+      <div class="flex">
+        <!-- Sidebar -->
+        <aside class="hidden lg:flex w-56 shrink-0 flex-col border-r border-white/10 p-4 gap-1">
+          <div class="flex items-center gap-2 px-2 pb-4">
+            <span class="w-6 h-6 rounded-md bg-gradient-to-br from-brand-400 to-brand-600"></span>
+            <span class="text-sm font-bold text-white">Lexora</span>
+          </div>
+          <span class="px-3 py-2 rounded-lg bg-white/10 text-white text-sm font-medium">Dashboard</span>
+          <span class="px-3 py-2 rounded-lg text-slate-400 text-sm">Cases</span>
+          <span class="px-3 py-2 rounded-lg text-slate-400 text-sm">Hearings</span>
+          <span class="px-3 py-2 rounded-lg text-slate-400 text-sm">AI Assistant</span>
+        </aside>
+
+        <div class="flex-1 min-w-0">
+          <!-- Top navbar -->
+          <div class="flex items-center justify-between px-6 py-4 border-b border-white/10">
+            <p class="text-sm font-semibold text-white">Overview</p>
+            <span class="w-7 h-7 rounded-full bg-brand-500/30 border border-brand-400/40"></span>
+          </div>
+
+          <div class="p-6 grid lg:grid-cols-3 gap-5">
+            <!-- Left: stats + recent cases + documents -->
+            <div class="lg:col-span-2 space-y-5">
+              <div class="grid grid-cols-3 gap-4">
+                <div class="rounded-xl bg-white/5 border border-white/10 p-4">
+                  <p class="text-xs text-slate-400">Case Statistics</p>
+                  <div class="mt-3 flex items-end gap-1.5 h-12">
+                    <span class="w-2.5 bg-brand-500/70 rounded-sm" style="height:40%"></span>
+                    <span class="w-2.5 bg-brand-500/70 rounded-sm" style="height:70%"></span>
+                    <span class="w-2.5 bg-brand-500 rounded-sm" style="height:100%"></span>
+                    <span class="w-2.5 bg-brand-500/70 rounded-sm" style="height:55%"></span>
+                    <span class="w-2.5 bg-brand-500/70 rounded-sm" style="height:80%"></span>
+                  </div>
+                </div>
+                <div class="rounded-xl bg-white/5 border border-white/10 p-4">
+                  <p class="text-xs text-slate-400">Active Cases</p>
+                  <p class="mt-3 text-2xl font-extrabold text-white">128</p>
+                </div>
+                <div class="rounded-xl bg-white/5 border border-white/10 p-4">
+                  <p class="text-xs text-slate-400">Docs Indexed</p>
+                  <p class="mt-3 text-2xl font-extrabold text-white">3,402</p>
+                </div>
+              </div>
+
+              <div class="rounded-xl bg-white/5 border border-white/10 p-4">
+                <p class="text-xs font-semibold text-white mb-3">Recent Cases</p>
+                <div class="space-y-2.5 text-xs">
+                  <div class="flex items-center justify-between">
+                    <span class="text-slate-300">Verma vs. Sharma Textiles</span>
+                    <span class="px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-medium">Active</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-slate-300">Kapoor Estate Settlement</span>
+                    <span class="px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-400 font-medium">Hearing</span>
+                  </div>
+                  <div class="flex items-center justify-between">
+                    <span class="text-slate-300">Nair Corporate Merger</span>
+                    <span class="px-2 py-0.5 rounded-full bg-white/10 text-slate-400 font-medium">Closed</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-xl bg-white/5 border border-white/10 p-4">
+                <p class="text-xs font-semibold text-white mb-3">Recent Documents</p>
+                <div class="space-y-2.5 text-xs text-slate-300">
+                  <div class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-brand-400"></span> Witness_Statement_Rao.pdf</div>
+                  <div class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-brand-400"></span> Contract_Amendment_v2.docx</div>
+                  <div class="flex items-center gap-2"><span class="w-1.5 h-1.5 rounded-full bg-brand-400"></span> Court_Filing_2026.pdf</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: hearings + AI chat preview -->
+            <div class="space-y-5">
+              <div class="rounded-xl bg-white/5 border border-white/10 p-4">
+                <p class="text-xs font-semibold text-white mb-3">Upcoming Hearings</p>
+                <div class="space-y-3 text-xs">
+                  <div>
+                    <p class="text-slate-300 font-medium">Verma vs. Sharma Textiles</p>
+                    <p class="text-slate-500">Aug 12 · District Court</p>
+                  </div>
+                  <div>
+                    <p class="text-slate-300 font-medium">Kapoor Estate Settlement</p>
+                    <p class="text-slate-500">Aug 15 · High Court</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="rounded-xl bg-white/5 border border-white/10 p-4">
+                <p class="text-xs font-semibold text-white mb-3">AI Assistant</p>
+                <div class="space-y-2">
+                  <div class="ml-auto max-w-[85%] bg-brand-600 text-white text-xs rounded-lg rounded-tr-sm px-3 py-2">
+                    Summarize the witness statements
+                  </div>
+                  <div class="max-w-[90%] bg-white/10 text-slate-200 text-xs rounded-lg rounded-tl-sm px-3 py-2">
+                    Two witnesses confirm the delivery delay on May 3.
+                    <span class="block mt-1 text-[10px] text-brand-300">Witness_Statement_Rao.pdf · p.2</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= AI Chat Preview ============================= -->
+<section class="max-w-4xl mx-auto px-6 py-20">
+  <div class="text-center max-w-2xl mx-auto mb-10">
+    <p class="text-sm font-semibold text-brand-600 uppercase tracking-wide">AI Assistant</p>
+    <h2 class="mt-2 text-3xl font-extrabold text-navy-900 tracking-tight">Ask your case anything</h2>
+    <p class="mt-3 text-slate-600">Every answer is grounded in your own documents, with the exact source cited.</p>
+  </div>
+
+  <div class="rounded-2xl border border-slate-200 shadow-card overflow-hidden">
+    <div class="px-5 py-3 border-b border-slate-100 bg-slate-50 flex items-center gap-2">
+      <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+      <span class="text-xs font-medium text-slate-500">Case Assistant — Verma vs. Sharma Textiles</span>
+    </div>
+    <div class="p-6 space-y-4 bg-white">
+      <div class="flex justify-end">
+        <div class="max-w-md bg-navy-900 text-white text-sm rounded-2xl rounded-tr-sm px-4 py-3">
+          Summarize all witness statements.
+        </div>
+      </div>
+      <div class="flex justify-start">
+        <div class="max-w-lg bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-2xl rounded-tl-sm px-4 py-3">
+          <p>
+            Three witnesses testified. Two confirm the goods were delivered 12 days late, and one
+            describes a verbal agreement to extend the deadline that was never put in writing.
+          </p>
+          <div class="mt-3 flex flex-wrap gap-2">
+            <span class="text-[11px] font-medium px-2 py-1 rounded-full bg-brand-50 text-brand-700 border border-brand-100">Witness_Statement_Rao.pdf · p.2</span>
+            <span class="text-[11px] font-medium px-2 py-1 rounded-full bg-brand-50 text-brand-700 border border-brand-100">Witness_Statement_Iyer.pdf · p.1</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= Benefits ============================= -->
+<section class="bg-slate-50 border-y border-slate-100">
+  <div class="max-w-7xl mx-auto px-6 py-20">
+    <div class="max-w-2xl mb-12">
+      <p class="text-sm font-semibold text-brand-600 uppercase tracking-wide">Benefits</p>
+      <h2 class="mt-2 text-3xl font-extrabold text-navy-900 tracking-tight">Built to give you time back</h2>
+    </div>
+
+    <div class="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="flex flex-col items-start">
+        <span class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>
+        </span>
+        <h3 class="mt-3 font-bold text-navy-900 text-sm">Save Time</h3>
+        <p class="mt-1 text-sm text-slate-600">Spend less time searching and more time on strategy.</p>
+      </div>
+      <div class="flex flex-col items-start">
+        <span class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>
+        </span>
+        <h3 class="mt-3 font-bold text-navy-900 text-sm">Find Information Instantly</h3>
+        <p class="mt-1 text-sm text-slate-600">Locate the exact clause or statement in seconds.</p>
+      </div>
+      <div class="flex flex-col items-start">
+        <span class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18M8 3v3M16 3v3"/></svg>
+        </span>
+        <h3 class="mt-3 font-bold text-navy-900 text-sm">Prepare Hearings Faster</h3>
+        <p class="mt-1 text-sm text-slate-600">Walk in with every relevant document already organized.</p>
+      </div>
+      <div class="flex flex-col items-start">
+        <span class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l1.9 4.6L18.5 9l-4.6 1.9L12 15.5l-1.9-4.6L5.5 9l4.6-1.9L12 3z"/></svg>
+        </span>
+        <h3 class="mt-3 font-bold text-navy-900 text-sm">AI-powered Legal Research</h3>
+        <p class="mt-1 text-sm text-slate-600">Get grounded answers backed by your own case files.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= CTA ============================= -->
+<section id="contact" class="max-w-7xl mx-auto px-6 py-20">
+  <div class="rounded-2xl bg-navy-900 px-8 py-14 sm:px-16 text-center">
+    <h2 class="text-3xl font-extrabold text-white tracking-tight">Ready to manage your legal cases with AI?</h2>
+    <p class="mt-3 text-slate-300 max-w-xl mx-auto">Join legal teams who have moved their case files into one searchable, AI-assisted workspace.</p>
+    <div class="mt-8 flex flex-wrap items-center justify-center gap-4">
+      <a href="{% url 'register' %}" data-analytics-cta="landing.cta.create_account" class="px-6 py-3 rounded-xl bg-white text-navy-900 text-sm font-semibold hover:bg-slate-100 transition-colors">Create Account</a>
+      <a href="{% url 'login' %}" data-analytics-cta="landing.cta.login" class="px-6 py-3 rounded-xl border border-white/30 text-white text-sm font-semibold hover:bg-white/10 transition-colors">Login</a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================= Footer ============================= -->
+<footer class="border-t border-slate-200">
+  <div class="max-w-7xl mx-auto px-6 py-12 flex flex-col sm:flex-row items-center sm:items-start justify-between gap-8">
+    <div class="flex items-center gap-2.5">
+      <span class="w-7 h-7 rounded-lg bg-gradient-to-br from-navy-700 to-brand-500"></span>
+      <span class="text-base font-extrabold text-navy-900">Lexora</span>
+    </div>
+  </div>
+  <div class="border-t border-slate-100 py-5 text-center text-xs text-slate-400">
+    &copy; {% now "Y" %} Lexora. All rights reserved.
+  </div>
+</footer>
+
+<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+{% csrf_token %}
+<script>
+  window.ANALYTICS_EVENTS_API_URL = "{% url 'analytics_track_event_api' %}";
+</script>
+<script src="{% static 'js/analytics.js' %}"></script>
+</body>
+</html>

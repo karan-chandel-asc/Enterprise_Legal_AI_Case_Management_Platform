@@ -7,7 +7,7 @@
 <div class="page-head">
   <div class="titles">
     <h1 class="h1">Hearings</h1>
-    <p>5 upcoming hearings across 5 cases.</p>
+    <p id="hearings-subtitle">Loading hearings…</p>
   </div>
   <div class="page-actions">
     <button class="btn btn-primary" id="new-hearing-btn">
@@ -88,5 +88,9 @@
 {% endblock %}
 
 {% block page_js %}
+<script>
+  window.HEARINGS_API_URL = "{% url 'hearings_api' %}";
+  window.CASES_LIST_API_URL = "{% url 'cases_list_api' %}";
+</script>
 <script src="{% static 'js/hearings.js' %}"></script>
 {% endblock %}

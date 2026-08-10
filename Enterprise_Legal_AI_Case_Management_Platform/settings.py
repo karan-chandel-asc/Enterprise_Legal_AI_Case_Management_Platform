@@ -10,22 +10,46 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 
+import os
 from pathlib import Path
+
+from celery.schedules import crontab
+from dotenv import load_dotenv
+from django.core.exceptions import ImproperlyConfigured
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+load_dotenv(BASE_DIR / ".env")
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-v_e6r0jqrb7hynj5cp0!dv^a62&2lamz=+e2ee1n*82zpb$m81'
+SECRET_KEY = os.getenv(
+    "DJANGO_SECRET_KEY",
+    "django-insecure-v_e6r0jqrb7hynj5cp0!dv^a62&2lamz=+e2ee1n*82zpb$m81",
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() in {"1", "true", "yes", "on"}
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    h.strip() for h in os.getenv("DJANGO_ALLOWED_HOSTS", "localhost,127.0.0.1").split(",") if h.strip()
+]
+
+# Needed when the site is served behind nginx / a public domain or IP.
+CSRF_TRUSTED_ORIGINS = [
+    o.strip() for o in os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",") if o.strip()
+]
+
+# Trust X-Forwarded-Proto from nginx when using HTTPS later.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
+# Browser calls for chat/search. Local default is FastAPI on :8001.
+# Docker/nginx uses same-origin path "/ai" (see nginx/default.conf).
+CHATBOT_API_BASE_URL = os.getenv("CHATBOT_API_BASE_URL", "http://127.0.0.1:8001").rstrip("/")
 
 
 # Application definition
@@ -38,11 +62,13 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'case_management',
-    'auth_app'
+    'auth_app',
     'chatbot',
     'dashboard',
+    'analytics',
     "rest_framework",
     "corsheaders",
+    "django_celery_results",
 
 ]
 
@@ -61,13 +87,14 @@ ROOT_URLCONF = 'Enterprise_Legal_AI_Case_Management_Platform.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [BASE_DIR / 'templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'Enterprise_Legal_AI_Case_Management_Platform.context_processors.chatbot_settings',
             ],
         },
     },
@@ -79,12 +106,25 @@ WSGI_APPLICATION = 'Enterprise_Legal_AI_Case_Management_Platform.wsgi.applicatio
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+# Postgres when POSTGRES_HOST is set (Docker / production); otherwise SQLite for local dev.
+if os.getenv("POSTGRES_HOST"):
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.postgresql",
+            "NAME": os.getenv("POSTGRES_DB", "lexora"),
+            "USER": os.getenv("POSTGRES_USER", "lexora"),
+            "PASSWORD": os.getenv("POSTGRES_PASSWORD", "lexora"),
+            "HOST": os.getenv("POSTGRES_HOST"),
+            "PORT": os.getenv("POSTGRES_PORT", "5432"),
+        }
     }
-}
+else:
+    DATABASES = {
+        "default": {
+            "ENGINE": "django.db.backends.sqlite3",
+            "NAME": BASE_DIR / "db.sqlite3",
+        }
+    }
 
 
 # Password validation
@@ -122,8 +162,105 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [BASE_DIR / 'static']
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
+# Uploaded case documents
+MEDIA_URL = 'media/'
+MEDIA_ROOT = BASE_DIR / 'media'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+AUTH_USER_MODEL = 'auth_app.User'
+
+
+# Celery
+# ------------------------------------------------------------------
+# Redis is the sole broker. Point REDIS_URL in .env at a reachable Redis
+# (or Memurai on Windows) instance. No filesystem fallback - if Redis is
+# down, task queueing fails loudly instead of silently queuing to disk.
+REDIS_URL = os.getenv("REDIS_URL")
+if not REDIS_URL:
+    raise ImproperlyConfigured("REDIS_URL is not set. Add it to your .env file, e.g. REDIS_URL=redis://localhost:6379/0")
+
+CELERY_BROKER_URL = REDIS_URL
+CELERY_BROKER_TRANSPORT_OPTIONS = {"visibility_timeout": 3600}
+
+CELERY_RESULT_BACKEND = "django-db"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_TRACK_STARTED = True
+
+# Daily product digest (requires a separate `celery beat` process).
+CELERY_BEAT_SCHEDULE = {
+    "analytics-daily-digest": {
+        "task": "analytics.tasks.send_daily_analytics_digest",
+        "schedule": crontab(hour=2, minute=0),  # 02:00 UTC daily
+        "kwargs": {"hours": 24},
+    },
+}
+
+
+# Email
+# ------------------------------------------------------------------
+# Gmail SMTP using an app password (see EMAIL_HOST_USER / EMAIL_HOST_PASSWORD
+# in .env). Sending itself always happens inside a Celery task (auth_app/
+# tasks.py) so a slow/blocked SMTP call never holds up the request.
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = os.getenv("EMAIL_HOST", "smtp.gmail.com")
+EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER", "")
+EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD", "")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", EMAIL_HOST_USER)
+
+# Analytics digest — emailed summary of signups/logins/feature usage/failures.
+ANALYTICS_DIGEST_ENABLED = os.getenv("ANALYTICS_DIGEST_ENABLED", "true").lower() in {
+    "1",
+    "true",
+    "yes",
+    "on",
+}
+ANALYTICS_DIGEST_EMAIL = os.getenv("ANALYTICS_DIGEST_EMAIL", EMAIL_HOST_USER or DEFAULT_FROM_EMAIL)
+
+
+# Logging
+# ------------------------------------------------------------------
+# Django's per-request access log ("GET /path HTTP/1.1" 200 ...) is emitted
+# by the 'django.server' logger, which by default writes straight to
+# sys.stderr and never propagates anywhere else (not even to app.log).
+# When runserver is launched through VS Code's debugger (debugpy), that
+# early stderr handle can end up disconnected from the pane you're
+# watching, so those lines silently disappear. Pin it to stdout explicitly,
+# which is what the "Starting development server..." banner uses and is
+# reliably visible in every launch method (plain terminal or debugger).
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "django.server": {
+            "()": "django.utils.log.ServerFormatter",
+            "format": "[{server_time}] {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "django.server": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "formatter": "django.server",
+            "stream": "ext://sys.stdout",
+        },
+    },
+    "loggers": {
+        "django.server": {
+            "handlers": ["django.server"],
+            "level": "INFO",
+            "propagate": False,
+        },
+    },
+}

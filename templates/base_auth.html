@@ -13,16 +13,20 @@
 <link rel="stylesheet" href="{% static 'css/layout.css' %}" />
 <link rel="stylesheet" href="{% static 'css/components.css' %}" />
 </head>
-<body>
+<body data-page="{% block page_id %}auth{% endblock %}">
+{% csrf_token %}
 <div class="auth-shell">
   <div class="auth-visual">
-    <div class="brand"><span class="mark"></span> Lexora</div>
+    <a href="{% url 'landing' %}" class="brand" style="cursor: pointer; text-decoration: none; color: inherit;">
+      <span class="mark" style="cursor: pointer;"></span>
+      <span style="cursor: pointer;">Lexora</span>
+    </a>
     <div class="pitch">
       <h1>Manage legal cases.<br/>Organize evidence.<br/>Search with AI.</h1>
       <p>One workspace for every matter — documents, hearings, and an AI assistant that answers questions with page-level citations.</p>
     </div>
     <div class="quote">
-      “Instead of reading 400 pages before a hearing, I ask Lexora and get the answer with the exact citation.” <br/><b>— Verma & Associates</b>
+      “Instead of reading 400 pages before a hearing, I ask Lexora and get the answer with the exact citation.” <br/><b>— Senior Litigation Counsel</b>
     </div>
   </div>
   <div class="auth-form-side">
@@ -31,8 +35,12 @@
     </div>
   </div>
 </div>
+<script>
+  window.ANALYTICS_EVENTS_API_URL = "{% url 'analytics_track_event_api' %}";
+</script>
 <script src="{% static 'js/utils.js' %}"></script>
 <script src="{% static 'js/auth.js' %}"></script>
+<script src="{% static 'js/analytics.js' %}"></script>
 {% block page_js %}{% endblock %}
 </body>
 </html>

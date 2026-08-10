@@ -18,11 +18,8 @@
     <button class="suggestion-chip" data-example="Evidence about the delayed possession">delayed possession</button>
     <button class="suggestion-chip" data-example="Statements mentioning fingerprints">mentioning fingerprints</button>
   </div>
-  <div class="search-scope">
+  <div class="search-scope" id="search-scope">
     <button class="filter-chip active" data-scope="all">All cases</button>
-    <button class="filter-chip" data-scope="crl-214-2024">State vs. Sharma</button>
-    <button class="filter-chip" data-scope="civ-89-2023">Mehta Contract Dispute</button>
-    <button class="filter-chip" data-scope="arb-12-2025">Rao Arbitration</button>
   </div>
 </div>
 
@@ -31,5 +28,12 @@
 {% endblock %}
 
 {% block page_js %}
+<script>
+  window.CASES_LIST_API_URL = "{% url 'cases_list_api' %}";
+  // The chatbot's semantic search runs on the standalone FastAPI service
+  // (chatbot/fastapi_app) so it can embed the query + hit Pinecone without
+  // blocking Django.
+  window.SEMANTIC_SEARCH_API_URL = "{{ CHATBOT_API_BASE_URL }}/api/search/";
+</script>
 <script src="{% static 'js/search.js' %}"></script>
 {% endblock %}

@@ -14,12 +14,11 @@
 <div class="profile-grid">
   <div class="flex-col gap-16">
     <div class="card profile-side">
-      <span class="avatar lg" data-user-initials>AV</span>
+      <span class="avatar lg" data-user-initials>—</span>
       <div>
-        <div style="font-weight:700;font-size:15px;" data-user-name>Ananya Verma</div>
-        <div class="text-sm text-muted" data-user-email>ananya.verma@lexora.law</div>
+        <div style="font-weight:700;font-size:15px;" data-user-name>—</div>
+        <div class="text-sm text-muted" data-user-email>—</div>
       </div>
-      <a href="#" class="change-photo" id="change-photo-link">Change photo</a>
     </div>
     <div class="card card-pad settings-nav">
       <div class="nav-item active" data-settings-tab="info">
@@ -42,12 +41,11 @@
       <div class="card card-pad">
         <h3 class="h3" style="margin-bottom:16px;">Profile information</h3>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px;">
-          <div class="field"><label>Full name</label><input class="input" id="p-name" value="Ananya Verma" /></div>
-          <div class="field"><label>Law firm</label><input class="input" id="p-firm" value="Verma & Associates" /></div>
-          <div class="field"><label>Work email</label><input class="input" type="email" id="p-email" value="ananya.verma@lexora.law" /></div>
-          <div class="field"><label>Phone number</label><input class="input" id="p-phone" value="+91 98765 43210" /></div>
+          <div class="field"><label>Full name</label><input class="input" id="p-name" placeholder="Your full name" /></div>
+          <div class="field"><label>Law firm</label><input class="input" id="p-firm" placeholder="Firm name" /></div>
+          <div class="field"><label>Work email</label><input class="input" type="email" id="p-email" disabled /></div>
+          <div class="field"><label>Phone number</label><input class="input" id="p-phone" placeholder="+91 …" /></div>
         </div>
-        <div class="field" style="margin-bottom:0;"><label>Bar registration number</label><input class="input" id="p-bar" value="D/1245/2014" /></div>
         <div class="flex" style="justify-content:flex-end;margin-top:8px;">
           <button class="btn btn-primary" id="save-profile-btn">Save changes</button>
         </div>
@@ -68,27 +66,19 @@
       </div>
     </div>
 
-    <div class="tab-panel" data-settings-panel="mfa">
+    <div class="tab-panel" data-settings-panel="mfa" id="mfa">
       <div class="card card-pad">
         <h3 class="h3" style="margin-bottom:6px;">Multi-factor authentication</h3>
         <p class="text-sm text-muted" style="margin-bottom:6px;">Require an email OTP in addition to your password when signing in.</p>
         <div class="security-row">
           <div>
             <b>Email OTP</b>
-            <span>A 6-digit code will be sent to ananya.verma@lexora.law at each sign-in.</span>
+            <span id="mfa-email-hint">A 6-digit code will be sent to your email at each sign-in.</span>
           </div>
           <label class="switch">
-            <input type="checkbox" id="mfa-toggle" checked />
+            <input type="checkbox" id="mfa-toggle" />
             <span class="track"></span>
           </label>
-        </div>
-        <div class="security-row">
-          <div><b>Last sign-in</b><span>Today, 8:42 AM · Delhi, India</span></div>
-          <span class="badge badge-success"><span class="dot"></span>Verified device</span>
-        </div>
-        <div class="security-row">
-          <div><b>Active sessions</b><span>1 device currently signed in</span></div>
-          <button class="btn btn-secondary btn-sm">Sign out all devices</button>
         </div>
       </div>
     </div>
@@ -97,5 +87,10 @@
 {% endblock %}
 
 {% block page_js %}
+<script>
+  window.PROFILE_API_URL = "{% url 'profile_api' %}";
+  window.CHANGE_PASSWORD_API_URL = "{% url 'change_password_api' %}";
+  window.UPDATE_MFA_API_URL = "{% url 'update_mfa_api' %}";
+</script>
 <script src="{% static 'js/profile.js' %}"></script>
 {% endblock %}

@@ -1,8 +1,25 @@
 document.addEventListener("DOMContentLoaded", () => {
-  let hearings = [...DEMO.hearings];
-  let viewYear = 2026, viewMonth = 7; // August 2026 — matches the seeded hearing dates
-  const today = new Date(2026, 7, 3);
+  let hearings = [];
+  let cases = [];
+  const now = new Date();
+  let viewYear = now.getFullYear(), viewMonth = now.getMonth();
+  const today = now;
   const MONTH_NAMES = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+
+  function mapHearing(h) {
+    return {
+      id: h.id,
+      caseId: h.case_id,
+      caseTitle: h.case_title,
+      caseNumber: h.case_number,
+      date: h.hearing_date,
+      time: h.hearing_time || "Time TBD",
+      court: h.court_name || "—",
+      judge: h.judge_name || "—",
+      status: h.status,
+      notes: h.notes,
+    };
+  }
 
   function dayCell(num, muted, iso, isToday) {
     const cell = el("div", { class: `cal-day ${muted ? "muted" : ""} ${isToday ? "today" : ""}` });
@@ -38,6 +55,10 @@ document.addEventListener("DOMContentLoaded", () => {
   function renderList() {
     const box = qs("#hearing-list");
     box.innerHTML = "";
+    if (!hearings.length) {
+      box.appendChild(el("div", { class: "text-sm text-muted", style: "padding:16px;" }, ["No hearings scheduled this month."]));
+      return;
+    }
     [...hearings].sort((a, b) => a.date.localeCompare(b.date)).forEach((h) => {
       const { day, month } = formatDateShort(h.date);
       box.appendChild(el("div", { class: "hearing-list-item", onclick: () => openHearing(h) }, [
@@ -45,16 +66,21 @@ document.addEventListener("DOMContentLoaded", () => {
         el("div", { class: "flex-1" }, [
           el("b", { style: "display:block;font-size:13px;" }, [h.caseTitle]),
           el("span", { class: "text-sm text-muted" }, [`${h.time} · ${h.court.split(",")[0]}`]),
-          el("div", { style: "margin-top:4px;", html: statusBadge(h.status === "urgent" ? "urgent" : "confirmed") }),
+          el("div", { style: "margin-top:4px;", html: statusBadge(h.status) }),
         ]),
       ]));
     });
   }
 
+  function updateSubtitle() {
+    const caseCount = new Set(hearings.map((h) => h.caseId)).size;
+    qs("#hearings-subtitle").textContent = `${hearings.length} hearing${hearings.length === 1 ? "" : "s"} across ${caseCount} case${caseCount === 1 ? "" : "s"} this month.`;
+  }
+
   function openHearing(h) {
-    qs("#ho-case-tag").textContent = h.caseId.toUpperCase();
+    qs("#ho-case-tag").textContent = (h.caseNumber || "").toUpperCase();
     qs("#ho-title").textContent = h.caseTitle;
-    qs("#ho-status").innerHTML = statusBadge(h.status === "urgent" ? "urgent" : "confirmed");
+    qs("#ho-status").innerHTML = statusBadge(h.status);
     qs("#ho-datetime").textContent = `${formatDateLong(h.date)} · ${h.time}`;
     qs("#ho-court").textContent = h.court;
     qs("#ho-judge").textContent = h.judge;
@@ -63,32 +89,91 @@ document.addEventListener("DOMContentLoaded", () => {
     qs("#hearing-slideover").classList.add("open");
   }
 
-  qs("#cal-prev").addEventListener("click", () => { viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; } renderCalendar(); });
-  qs("#cal-next").addEventListener("click", () => { viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; } renderCalendar(); });
+  async function loadHearings() {
+    try {
+      const params = new URLSearchParams({ month: viewMonth + 1, year: viewYear });
+      const res = await fetch(`${window.HEARINGS_API_URL}?${params.toString()}`, { headers: { Accept: "application/json" } });
+      const result = await res.json();
+      if (!res.ok || !result.success) {
+        toast(result.message || "Could not load hearings", "error");
+        return;
+      }
+      hearings = (result.data || []).map(mapHearing);
+      renderCalendar();
+      renderList();
+      updateSubtitle();
+    } catch (err) {
+      toast("Could not load hearings. Please refresh.", "error");
+    }
+  }
 
-  qs("#new-hearing-btn").addEventListener("click", () => {
+  async function loadCases() {
+    try {
+      const res = await fetch(`${window.CASES_LIST_API_URL}?page_size=100`, { headers: { Accept: "application/json" } });
+      const result = await res.json();
+      if (res.ok && result.success) {
+        cases = (result.data && result.data.cases) || [];
+      }
+    } catch (err) {
+      // Non-critical — the schedule modal will just show an empty case list.
+    }
+  }
+
+  qs("#cal-prev").addEventListener("click", () => { viewMonth--; if (viewMonth < 0) { viewMonth = 11; viewYear--; } loadHearings(); });
+  qs("#cal-next").addEventListener("click", () => { viewMonth++; if (viewMonth > 11) { viewMonth = 0; viewYear++; } loadHearings(); });
+
+  qs("#new-hearing-btn").addEventListener("click", async () => {
+    if (!cases.length) await loadCases();
     const sel = qs("#nh-case");
     sel.innerHTML = "";
-    DEMO.cases.forEach((c) => sel.appendChild(el("option", { value: c.id }, [c.title])));
+    cases.forEach((c) => sel.appendChild(el("option", { value: c.id }, [c.case_title])));
     ["nh-date", "nh-time", "nh-court", "nh-judge", "nh-notes"].forEach((id) => (qs("#" + id).value = ""));
     openModal("hearing-modal");
   });
-  qs("#save-hearing-btn").addEventListener("click", () => {
+
+  qs("#save-hearing-btn").addEventListener("click", async () => {
     const caseId = qs("#nh-case").value;
-    const c = DEMO.cases.find((x) => x.id === caseId);
     const date = qs("#nh-date").value;
+    if (!caseId) { toast("Please select a case", "error"); return; }
     if (!date) { toast("Please choose a date", "error"); return; }
-    hearings.push({
-      id: "h" + Date.now(), caseId, caseTitle: c.title, date,
-      time: qs("#nh-time").value || "10:00 AM", court: qs("#nh-court").value || c.court,
-      judge: qs("#nh-judge").value || c.judge, status: "confirmed", notes: qs("#nh-notes").value,
-    });
-    closeModal("hearing-modal");
-    renderCalendar();
-    renderList();
-    toast("Hearing scheduled", "success");
+
+    const payload = {
+      case_id: Number(caseId),
+      hearing_date: date,
+      hearing_time: qs("#nh-time").value || null,
+      court_name: qs("#nh-court").value,
+      judge_name: qs("#nh-judge").value,
+      notes: qs("#nh-notes").value,
+    };
+
+    const btn = qs("#save-hearing-btn");
+    btn.disabled = true;
+    try {
+      const res = await fetch(window.HEARINGS_API_URL, {
+        method: "POST",
+        headers: jsonHeaders(),
+        body: JSON.stringify(payload),
+      });
+      const result = await res.json();
+      if (!res.ok || !result.success) {
+        toast(result.message || "Could not schedule hearing", "error");
+        return;
+      }
+      closeModal("hearing-modal");
+      toast("Hearing scheduled", "success");
+      const scheduled = new Date(date + "T00:00:00");
+      if (scheduled.getFullYear() !== viewYear || scheduled.getMonth() !== viewMonth) {
+        viewYear = scheduled.getFullYear();
+        viewMonth = scheduled.getMonth();
+      }
+      loadHearings();
+    } catch (err) {
+      toast("Could not schedule hearing. Please try again.", "error");
+    } finally {
+      btn.disabled = false;
+    }
   });
 
-  renderCalendar();
-  renderList();
+  loadHearings();
+  loadCases();
 });

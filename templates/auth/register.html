@@ -1,5 +1,6 @@
 {% extends "base_auth.html" %}
 {% block title %}Create account{% endblock %}
+{% block page_id %}register{% endblock %}
 {% block content %}
 <h2>Create your workspace</h2>
 <p class="sub">Set up your Lexora account in under a minute.</p>
@@ -27,10 +28,6 @@
     </div>
     <span class="hint">Use 8+ characters with a number and a symbol.</span>
   </div>
-  <label class="checkbox-row" style="margin-bottom:20px;">
-    <input type="checkbox" required />
-    I agree to the Terms of Service and Privacy Policy
-  </label>
   <button type="submit" class="btn btn-primary btn-lg btn-block">Create account</button>
 </form>
 
@@ -39,10 +36,52 @@
 
 {% block page_js %}
 <script>
-  qs("#register-form").addEventListener("submit", (e) => {
+  qs("#register-form").addEventListener("submit", async (e) => {
     e.preventDefault();
+    const submitBtn = e.target.querySelector("button[type=submit]");
+
+    const hasMultipleSpaces = (str) => /\s{2,}/.test(str);
+    if (
+      qs("#fullname").value.trim() === "" ||
+      qs("#firm").value.trim() === "" ||
+      qs("#reg-email").value.trim() === "" ||
+      qs("#reg-password").value.trim() === ""
+    ) {
+      toast("Please fill in all fields", "error");
+      return;
+    }
+    if (
+      hasMultipleSpaces(qs("#fullname").value) ||
+      hasMultipleSpaces(qs("#firm").value)
+    )
+
+    submitBtn.disabled = true;
     toast("Creating your workspace…");
-    setTimeout(() => { window.location = "{% url 'verify_email' %}"; }, 500);
+    try {
+      const res = await fetch("{% url 'register_api' %}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          full_name: qs("#fullname").value,
+          law_firm_name: qs("#firm").value,
+          email: qs("#reg-email").value,
+          password: qs("#reg-password").value,
+        }),
+      });
+      const result = await res.json();
+      if (!res.ok || !result.success) {
+        toast(result.message || "Registration failed", "error");
+        return;
+      }
+      toast(result.message || "Account created", "success");
+      const requiresVerification = result.data && result.data.requires_verification;
+      const nextUrl = requiresVerification ? "{% url 'verify_email' %}" : "{% url 'login' %}";
+      setTimeout(() => { window.location = nextUrl; }, 500);
+    } catch (err) {
+      toast("Something went wrong. Please try again.", "error");
+    } finally {
+      submitBtn.disabled = false;
+    }
   });
 </script>
 {% endblock %}

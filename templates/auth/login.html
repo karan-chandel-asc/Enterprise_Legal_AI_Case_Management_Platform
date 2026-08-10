@@ -1,5 +1,6 @@
 {% extends "base_auth.html" %}
 {% block title %}Sign in{% endblock %}
+{% block page_id %}login{% endblock %}
 {% block content %}
 <h2>Welcome back</h2>
 <p class="sub">Sign in to your Lexora workspace.</p>
@@ -7,21 +8,20 @@
 <form id="login-form" novalidate>
   <div class="field">
     <label for="email">Work email</label>
-    <input class="input" type="email" id="email" placeholder="you@lawfirm.com" value="ananya.verma@lexora.law" required />
+    <input class="input" type="email" id="email" placeholder="you@lawfirm.com" required />
   </div>
   <div class="field">
     <label for="password">Password</label>
     <div class="input-group">
-      <input class="input" type="password" id="password" placeholder="••••••••••" value="demo-password" required />
+      <input class="input" type="password" id="password" placeholder="••••••••••"  required />
       <button type="button" class="adorn" data-toggle-password="password">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
       </button>
     </div>
   </div>
-  <div class="flex items-center justify-between" style="margin-bottom:20px;">
-    <label class="checkbox-row"><input type="checkbox" checked /> Keep me signed in</label>
+  {% comment %} <div class="flex items-center justify-between" style="margin-bottom:20px;">
     <a href="{% url 'forgot_password' %}" style="font-size:12.5px;color:var(--accent);font-weight:600;">Forgot password?</a>
-  </div>
+  </div> {% endcomment %}
   <button type="submit" class="btn btn-primary btn-lg btn-block">Sign in</button>
 </form>
 
@@ -30,10 +30,34 @@
 
 {% block page_js %}
 <script>
-  qs("#login-form").addEventListener("submit", (e) => {
+  qs("#login-form").addEventListener("submit", async (e) => {
     e.preventDefault();
+    const submitBtn = e.target.querySelector("button[type=submit]");
+    submitBtn.disabled = true;
     toast("Verifying credentials…");
-    setTimeout(() => { window.location = "{% url 'mfa_otp' %}"; }, 500);
+    try {
+      const res = await fetch("{% url 'login_api' %}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: qs("#email").value,
+          password: qs("#password").value,
+        }),
+      });
+      const result = await res.json();
+      if (!res.ok || !result.success) {
+        toast(result.message || "Invalid email or password", "error");
+        return;
+      }
+      toast(result.message || "Signed in", "success");
+      const requiresMfa = result.data && result.data.requires_mfa;
+      const nextUrl = requiresMfa ? "{% url 'mfa_otp' %}" : "{% url 'dashboard' %}";
+      setTimeout(() => { window.location = nextUrl; }, 500);
+    } catch (err) {
+      toast("Something went wrong. Please try again.", "error");
+    } finally {
+      submitBtn.disabled = false;
+    }
   });
 </script>
 {% endblock %}

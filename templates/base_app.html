@@ -16,6 +16,7 @@
 {% block extra_css %}{% endblock %}
 </head>
 <body data-page="{% block page_id %}{% endblock %}">
+{% csrf_token %}
 <div class="app-shell">
 
   <aside class="sidebar">
@@ -26,23 +27,23 @@
 
     <nav class="sidebar-nav">
       <div class="nav-group-label">Workspace</div>
-      <a class="nav-item" data-nav="dashboard" href="{% url 'dashboard' %}">
+      <a class="nav-item" data-nav="dashboard" data-analytics-cta="nav.dashboard" href="{% url 'dashboard' %}">
         <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg></span>
         Dashboard
       </a>
-      <a class="nav-item" data-nav="cases" href="{% url 'cases_list' %}">
+      <a class="nav-item" data-nav="cases" data-analytics-cta="nav.cases" href="{% url 'cases_list' %}">
         <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg></span>
         Cases
-        <span class="count">31</span>
+        <span id="total-cases-count" class="count"></span>
       </a>
-      <a class="nav-item" data-nav="search" href="{% url 'search' %}">
+      <a class="nav-item" data-nav="search" data-analytics-cta="nav.search" href="{% url 'search' %}">
         <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
         Semantic Search
       </a>
-      <a class="nav-item" data-nav="hearings" href="{% url 'hearings' %}">
+      <a class="nav-item" data-nav="hearings" data-analytics-cta="nav.hearings" href="{% url 'hearings' %}">
         <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></span>
         Hearings
-        <span class="count">5</span>
+        <span id="total-hearings-count" class="count"></span>
       </a>
 
       <div class="nav-group-label">Account</div>
@@ -50,7 +51,7 @@
         <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
         Profile & Settings
       </a>
-      <a class="nav-item" href="{% url 'login' %}">
+      <a class="nav-item" href="{% url 'logout' %}">
         <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg></span>
         Log out
       </a>
@@ -59,10 +60,10 @@
     <div class="sidebar-footer">
       <div class="dropdown">
         <div class="user-chip" data-dropdown-toggle="user-menu" style="cursor:pointer">
-          <span class="avatar" data-user-initials>AV</span>
+          <span class="avatar" data-user-initials>{% if user.is_authenticated %}{{ user.full_name|default:user.email|slice:":2"|upper }}{% else %}?{% endif %}</span>
           <div class="who">
-            <b data-user-name>Ananya Verma</b>
-            <span data-user-firm>Verma & Associates</span>
+            <b data-user-name>{% if user.is_authenticated %}{{ user.full_name|default:user.email }}{% else %}Guest{% endif %}</b>
+            <span data-user-firm>{% if user.is_authenticated %}{{ user.law_firm_name|default:"Lexora" }}{% else %}—{% endif %}</span>
           </div>
         </div>
         <div class="dropdown-menu" id="user-menu" style="bottom: 54px; left: 4px; right: 4px;">
@@ -70,12 +71,12 @@
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             Profile
           </a>
-          <a class="dropdown-item" href="{% url 'profile' %}#security">
+          <a class="dropdown-item" href="{% url 'profile' %}#mfa">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="11" width="18" height="10" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             Security & MFA
           </a>
           <div class="dropdown-sep"></div>
-          <a class="dropdown-item danger" href="{% url 'login' %}">
+          <a class="dropdown-item danger" href="{% url 'logout' %}">
             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             Log out
           </a>
@@ -87,29 +88,22 @@
   <div class="app-main">
     <header class="topbar">
       <button class="icon-btn" data-mobile-nav-toggle style="display:none">☰</button>
-      <div class="topbar-search">
-        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></span>
-        <input type="text" placeholder="Search cases, documents, hearings…" onfocus="window.location='{% url 'search' %}'" readonly />
-        <kbd>⌘K</kbd>
-      </div>
       <div class="topbar-actions">
-        <a class="btn btn-primary btn-sm" href="{% url 'cases_list' %}">
+        <a class="btn btn-primary btn-sm" id="topbar-new-case-btn" data-analytics-cta="case.new" href="{% url 'cases_list' %}">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
           New Case
         </a>
         <div class="dropdown">
-          <button class="icon-btn" data-dropdown-toggle="notif-menu">
+          <button class="icon-btn" data-dropdown-toggle="notif-menu" title="Notifications">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
-            <span class="dot"></span>
           </button>
           <div class="dropdown-menu" id="notif-menu" style="right:0; left:auto; width:280px;">
             <div style="padding:6px 8px 8px; font-size:12px; font-weight:700; color:var(--muted);">Notifications</div>
-            <a class="dropdown-item" href="{% url 'case_detail' case_id='crl-214-2024' %}">Hearing in 2 days — State vs. Sharma</a>
-            <a class="dropdown-item" href="{% url 'case_detail' case_id='civ-45-2024' %}">OCR finished — Iyer Property Title</a>
-            <a class="dropdown-item" href="{% url 'case_detail' case_id='crl-214-2024' %}">AI summary ready — State vs. Sharma</a>
+            <div class="dropdown-item" style="cursor:default; white-space:normal; line-height:1.45; color:var(--muted);">
+              Coming in the next version — real-time hearing and case alerts will show up here.
+            </div>
           </div>
         </div>
-        <div class="avatar" data-user-initials>AV</div>
       </div>
     </header>
 
@@ -119,10 +113,72 @@
   </div>
 </div>
 
+<!-- Create case modal — shared across every page so the topbar "New Case"
+     button always works, regardless of which page you're on. -->
+<div class="modal-backdrop" id="case-modal">
+  <div class="modal modal-lg">
+    <div class="modal-head">
+      <h3 id="case-modal-title">Create new case</h3>
+      <button class="icon-btn" data-close-modal>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      <form id="case-form">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 16px;">
+          <div class="field"><label>Case number</label><input class="input" id="f-number" placeholder="CRL/000/2026" /></div>
+          <div class="field"><label>Case title</label><input class="input" id="f-title" placeholder="State vs. Doe" /></div>
+          <div class="field">
+            <label>Case type</label>
+            <select class="input" id="f-type">
+              <option value="criminal">Criminal</option>
+              <option value="civil">Civil</option>
+              <option value="family">Family</option>
+              <option value="corporate">Corporate</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Status</label>
+            <select class="input" id="f-status">
+              <option value="active">Active</option><option value="closed">Closed</option>
+            </select>
+          </div>
+          <div class="field"><label>Client name</label><input class="input" id="f-client" placeholder="Client full name" /></div>
+          <div class="field"><label>Opposite party</label><input class="input" id="f-opposite" placeholder="Opposing party" /></div>
+          <div class="field"><label>Court name</label><input class="input" id="f-court" placeholder="District Court, City" /></div>
+          <div class="field"><label>Hearing date</label><input class="input" type="date" id="f-hearing" /></div>
+        </div>
+        <div class="field"><label>Description</label><textarea class="input" id="f-desc" rows="3" placeholder="Brief description of the matter…"></textarea></div>
+      </form>
+    </div>
+    <div class="modal-foot">
+      <button class="btn btn-secondary" data-close-modal>Cancel</button>
+      <button class="btn btn-primary" id="case-save-btn">Save case</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  window.CASES_CREATE_API_URL = "{% url 'cases_create_api' %}";
+  window.ANALYTICS_EVENTS_API_URL = "{% url 'analytics_track_event_api' %}";
+  {% if user.is_authenticated %}
+  window.CURRENT_USER = {
+    full_name: "{{ user.full_name|default:''|escapejs }}",
+    law_firm_name: "{{ user.law_firm_name|default:''|escapejs }}",
+    email: "{{ user.email|escapejs }}",
+    phone_number: "{{ user.phone_number|default:''|escapejs }}",
+    mfa_enabled: {{ user.mfa_enabled|yesno:"true,false" }},
+  };
+  {% else %}
+  window.CURRENT_USER = null;
+  {% endif %}
+</script>
 <script src="{% static 'js/utils.js' %}"></script>
 <script src="{% static 'js/icons.js' %}"></script>
 <script src="{% static 'js/demo-data.js' %}"></script>
 <script src="{% static 'js/app-shell.js' %}"></script>
+<script src="{% static 'js/global-case-modal.js' %}"></script>
+<script src="{% static 'js/analytics.js' %}"></script>
 {% block page_js %}{% endblock %}
 </body>
 </html>

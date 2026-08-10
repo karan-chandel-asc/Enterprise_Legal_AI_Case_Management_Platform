@@ -5,16 +5,16 @@
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#4338ca" stroke-width="1.8"><path d="M4 4h16v16H4z" opacity="0"/><path d="M22 6l-10 7L2 6"/><rect x="2" y="4" width="20" height="16" rx="2"/></svg>
 </div>
 <h2>Verify your email</h2>
-<p class="sub">We sent a 6-digit code to <b style="color:var(--ink)">ananya.verma@lexora.law</b>. Enter it below to confirm your account.</p>
+<p class="sub">We sent a 6-digit code to <b style="color:var(--ink)">{{ email|default:"your email" }}</b>. Enter it below to confirm your account.</p>
 
 <form id="verify-form" novalidate>
   <div class="otp-row" style="margin-bottom:18px;">
-    <input class="otp-box" maxlength="1" inputmode="numeric" value="4" />
-    <input class="otp-box" maxlength="1" inputmode="numeric" value="1" />
-    <input class="otp-box" maxlength="1" inputmode="numeric" value="9" />
-    <input class="otp-box" maxlength="1" inputmode="numeric" value="2" />
-    <input class="otp-box" maxlength="1" inputmode="numeric" value="7" />
-    <input class="otp-box" maxlength="1" inputmode="numeric" value="" />
+    <input class="otp-box" maxlength="1" inputmode="numeric" />
+    <input class="otp-box" maxlength="1" inputmode="numeric" />
+    <input class="otp-box" maxlength="1" inputmode="numeric" />
+    <input class="otp-box" maxlength="1" inputmode="numeric" />
+    <input class="otp-box" maxlength="1" inputmode="numeric" />
+    <input class="otp-box" maxlength="1" inputmode="numeric" />
   </div>
   <button type="submit" class="btn btn-primary btn-lg btn-block">Verify email</button>
 </form>
@@ -24,11 +24,44 @@
 
 {% block page_js %}
 <script>
-  qs("#verify-form").addEventListener("submit", (e) => {
+  qs("#verify-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-    toast("Email verified", "success");
-    setTimeout(() => { window.location = "{% url 'login' %}"; }, 500);
+    const otp = qsa(".otp-box").map((box) => box.value).join("");
+    if (otp.length !== 6) {
+      toast("Enter the 6-digit code", "error");
+      return;
+    }
+    const submitBtn = e.target.querySelector("button[type=submit]");
+    submitBtn.disabled = true;
+    try {
+      const res = await fetch("{% url 'verify_email_api' %}", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ otp }),
+      });
+      const result = await res.json();
+      if (!res.ok || !result.success) {
+        toast(result.message || "Invalid verification code", "error");
+        return;
+      }
+      toast(result.message || "Email verified", "success");
+      setTimeout(() => { window.location = "{% url 'login' %}"; }, 500);
+    } catch (err) {
+      toast("Something went wrong. Please try again.", "error");
+    } finally {
+      submitBtn.disabled = false;
+    }
   });
-  qs("#resend-link").addEventListener("click", (e) => { e.preventDefault(); toast("Verification code resent"); });
+
+  qs("#resend-link").addEventListener("click", async (e) => {
+    e.preventDefault();
+    try {
+      const res = await fetch("{% url 'resend_verify_email_otp_api' %}", { method: "POST" });
+      const result = await res.json();
+      toast(result.message || "Verification code resent", result.success ? "success" : "error");
+    } catch (err) {
+      toast("Something went wrong. Please try again.", "error");
+    }
+  });
 </script>
 {% endblock %}

@@ -79,6 +79,15 @@ function toast(message, type) {
   setTimeout(() => { t.style.opacity = "0"; t.style.transition = "opacity .25s"; setTimeout(() => t.remove(), 250); }, 2600);
 }
 
+function getCookie(name) {
+  const match = document.cookie.match("(^|;)\\s*" + name + "\\s*=\\s*([^;]+)");
+  return match ? decodeURIComponent(match.pop()) : null;
+}
+
+function jsonHeaders(extra) {
+  return Object.assign({ "Content-Type": "application/json", "X-CSRFToken": getCookie("csrftoken") }, extra || {});
+}
+
 function openModal(id) { const m = qs("#" + id); if (m) m.classList.add("open"); }
 function closeModal(id) { const m = qs("#" + id); if (m) m.classList.remove("open"); }
 
