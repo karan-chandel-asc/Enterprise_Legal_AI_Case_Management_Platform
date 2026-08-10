@@ -1,0 +1,22 @@
+.venv/
+__pycache__/
+**/__pycache__/
+*.py[cod]
+*.sqlite3
+db.sqlite3
+.env
+media/
+staticfiles/
+*.log
+.DS_Store
+control/
+.vscode/
+
+# Django migrations (local only — not pushed to GitHub)
+**/migrations/*.py
+!**/migrations/__init__.py
+
+# Large demo video — host on YouTube / Google Drive / Loom (GitHub 100MB limit)
+demo/*.mp4
+demo/*.mov
+demo/*.webm
