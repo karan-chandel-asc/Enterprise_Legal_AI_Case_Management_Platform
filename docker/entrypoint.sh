@@ -2,6 +2,8 @@
 set -e
 
 if [ "${RUN_MIGRATIONS:-0}" = "1" ]; then
+  echo "Creating any missing migrations..."
+  python manage.py makemigrations --noinput
   echo "Running migrations..."
   python manage.py migrate --noinput
   echo "Collecting static files..."

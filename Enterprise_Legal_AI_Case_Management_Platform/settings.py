@@ -47,6 +47,14 @@ CSRF_TRUSTED_ORIGINS = [
 # Trust X-Forwarded-Proto from nginx when using HTTPS later.
 SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
+# Django defaults this to "same-origin", which browsers ignore (and warn about)
+# on plain HTTP. Keep None until you serve HTTPS; then set to "same-origin".
+_coop = os.getenv("SECURE_CROSS_ORIGIN_OPENER_POLICY", "").strip().lower()
+if _coop in {"", "none", "off", "false", "0"}:
+    SECURE_CROSS_ORIGIN_OPENER_POLICY = None
+else:
+    SECURE_CROSS_ORIGIN_OPENER_POLICY = _coop
+
 # Browser calls for chat/search. Local default is FastAPI on :8001.
 # Docker/nginx uses same-origin path "/ai" (see nginx/default.conf).
 CHATBOT_API_BASE_URL = os.getenv("CHATBOT_API_BASE_URL", "http://127.0.0.1:8001").rstrip("/")

@@ -76,7 +76,6 @@ pypdf==6.14.2
 python-dateutil==2.9.0.post0
 python-dotenv==1.2.2
 python-multipart==0.0.32
-pywin32==312
 PyYAML==6.0.3
 redis==8.1.0
 requests==2.34.2
@@ -102,7 +101,7 @@ uuid_utils==0.17.0
 uvicorn==0.52.1
 vine==5.1.0
 wcwidth==0.8.2
-websockets==17.0.1
+websockets==15.0.1
 xxhash==3.8.1
 yarl==1.24.5
 zstandard==0.25.0
