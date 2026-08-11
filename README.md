@@ -22,7 +22,7 @@
 
 | Asset | Link |
 |-------|------|
-| **Walkthrough video** | *[Add your YouTube / Loom / Drive link here]* — local file: [`demo/lexora-demo.mp4`](./demo/lexora-demo.mp4) (not committed; see [`demo/README.md`](./demo/README.md)) |
+| **Walkthrough video** | [Watch on Google Drive](https://drive.google.com/file/d/1HV7-rRZnhPsL9fIy8KQ1CKWqnh5CRm1W/view?usp=sharing) |
 | **Screenshots** | [`screenshots/`](./screenshots/) |
 | **AWS deploy guide** | [`DEPLOY_AWS.md`](./DEPLOY_AWS.md) |
 
