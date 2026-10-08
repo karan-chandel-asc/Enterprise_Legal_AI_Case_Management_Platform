@@ -231,12 +231,51 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---- AI Assistant (real LangGraph RAG chatbot) ----
   let chatState = [];
   let chatLoaded = false;
+  function showCitation(c) {
+    let backdrop = qs("#citation-modal");
+    if (!backdrop) {
+      backdrop = el("div", { class: "modal-backdrop", id: "citation-modal" });
+      backdrop.innerHTML = `
+        <div class="modal" style="max-width:640px;">
+          <div class="modal-head"><h3 id="cm-title">Source</h3><button class="icon-btn" data-close-modal type="button">✕</button></div>
+          <div class="modal-body">
+            <div class="text-sm text-muted" id="cm-meta" style="margin-bottom:10px;"></div>
+            <div class="card card-pad" style="max-height:320px;overflow:auto;line-height:1.7;font-size:13.5px;white-space:pre-wrap;" id="cm-excerpt"></div>
+          </div>
+          <div class="modal-foot"><button class="btn btn-primary" type="button" id="cm-open">Open page in document</button></div>
+        </div>`;
+      document.body.appendChild(backdrop);
+      backdrop.addEventListener("click", (e) => {
+        if (e.target === backdrop || e.target.closest("[data-close-modal]")) backdrop.classList.remove("open");
+      });
+    }
+    qs("#cm-title").textContent = c.doc_name;
+    qs("#cm-meta").textContent = `Page ${c.page}` + (c.score != null ? ` · similarity ${Math.round(c.score * 100)}%` : "");
+    qs("#cm-excerpt").textContent = c.excerpt || "Excerpt unavailable for this older message.";
+    const openBtn = qs("#cm-open");
+    openBtn.style.display = c.file_url ? "" : "none";
+    openBtn.onclick = () => {
+      const base = /^https?:\/\//i.test(c.file_url) ? c.file_url : window.location.origin + c.file_url;
+      const isPdf = (c.file_type || "") === "pdf" || /\.pdf($|\?)/i.test(base);
+      window.open(isPdf ? `${base}#page=${Math.max(1, Number(c.page) || 1)}` : base, "_blank", "noopener");
+    };
+    backdrop.classList.add("open");
+  }
+
   function chatBubble(msg) {
     const wrap = el("div", { class: `msg ${msg.role === "user" ? "user" : "ai"}` });
     wrap.appendChild(el("div", { class: "bubble", html: escapeHtml(msg.content).replace(/\n/g, "<br/>") }));
     if (msg.citations && msg.citations.length) {
       const src = el("div", { class: "msg-sources" });
-      msg.citations.forEach((c) => src.appendChild(el("span", { class: "source-chip" }, [`${c.doc_name} · p.${c.page}`])));
+      msg.citations.forEach((c) => {
+        const label = `${c.n ? `[${c.n}] ` : ""}${c.doc_name} · p.${c.page}`;
+        const chip = el("button", {
+          type: "button", class: "source-chip", style: "cursor:pointer;",
+          title: "View the exact passage this answer came from",
+          onclick: () => showCitation(c),
+        }, [label]);
+        src.appendChild(chip);
+      });
       wrap.appendChild(src);
     }
     return wrap;

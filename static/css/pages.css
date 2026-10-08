@@ -83,8 +83,9 @@
 .source-chip {
   font-size: 10.5px; font-weight: 600; color: var(--accent-ink); background: var(--accent-soft);
   border: 1px solid var(--accent-soft-border); border-radius: var(--r-pill); padding: 3px 9px;
-  display: inline-flex; align-items: center; gap: 4px;
+  display: inline-flex; align-items: center; gap: 4px; font-family: inherit;
 }
+button.source-chip:hover { background: var(--accent); color: #fff; }
 .msg-confidence { font-size: 10.5px; color: var(--muted); }
 .typing-dots { display: inline-flex; gap: 3px; padding: 4px 0; }
 .typing-dots i { width: 6px; height: 6px; border-radius: 50%; background: var(--faint); animation: typingBounce 1s infinite ease-in-out; }

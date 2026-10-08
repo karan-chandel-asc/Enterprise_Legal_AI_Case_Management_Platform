@@ -50,9 +50,13 @@ def process_document_embedding(self, document_id: int):
             if not page_text.strip():
                 continue
             metadata = getattr(page, "metadata", None) or {}
+            # PyPDFLoader's "page" metadata is 0-based; citations must show the
+            # real (1-based) page number so they match what the PDF viewer shows.
+            raw_page = metadata.get("page")
+            page_label = raw_page + 1 if isinstance(raw_page, int) else page_number
             chunks, _ = ChunkingService(page_text).chunk_text()
             for chunk in chunks:
-                chunks_meta.append({"text": chunk, "page": metadata.get("page", page_number)})
+                chunks_meta.append({"text": chunk, "page": page_label})
 
         if not chunks_meta:
             _mark_failed(document, "No extractable text found in this document")

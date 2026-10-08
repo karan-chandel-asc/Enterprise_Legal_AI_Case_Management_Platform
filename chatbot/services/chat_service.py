@@ -51,6 +51,14 @@ class ChatService:
             else:
                 result = run_rag_chat(question, doc_ids, history)
                 answer, citations = result["answer"], result["citations"]
+                files = {
+                    str(d.id): d
+                    for d in case.documents.filter(id__in=[c["doc_id"] for c in citations if c.get("doc_id")])
+                }
+                for c in citations:
+                    d = files.get(str(c.get("doc_id")))
+                    c["file_url"] = d.document_file.url if d and d.document_file else None
+                    c["file_type"] = (c["doc_name"].rsplit(".", 1)[-1].lower() if "." in c["doc_name"] else "")
 
             assistant_message = ChatMessage.objects.create(
                 case=case, role="assistant", content=answer, citations=citations

@@ -12,6 +12,7 @@ only the retrieved excerpts, citing them by bracket number.
 """
 
 import os
+import re
 from typing import TypedDict
 
 from langchain_groq import ChatGroq
@@ -98,9 +99,27 @@ def generate_node(state: ChatState) -> dict:
         logger.error(f"[RAG] LLM generation failed: {e}")
         answer = "I ran into an error generating a response just now. Please try again in a moment."
 
+    # Only surface sources the answer actually cites; drop bracket numbers that
+    # don't map to a real excerpt so the UI never shows a fabricated source.
+    cited_nums = {int(n) for n in re.findall(r"\[(\d+)\]", answer)}
+    valid_nums = {n for n in cited_nums if 1 <= n <= len(retrieved)}
+    for bad in cited_nums - valid_nums:
+        answer = answer.replace(f"[{bad}]", "")
+    # If the model cited nothing, fall back to showing everything it was given.
+    show = valid_nums or set(range(1, len(retrieved) + 1))
+
     citations = [
-        {"doc_name": c["doc_name"], "page": c["page"], "score": round(c["score"], 3)}
-        for c in retrieved
+        {
+            "n": i + 1,
+            "doc_id": c.get("doc_id", ""),
+            "doc_name": c["doc_name"],
+            "page": c["page"],
+            "score": round(c["score"], 3),
+            "excerpt": c["text"],
+            "cited": bool(valid_nums),
+        }
+        for i, c in enumerate(retrieved)
+        if i + 1 in show
     ]
     return {"answer": answer, "citations": citations}
 
